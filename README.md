@@ -1,6 +1,8 @@
 # kozmonos/laravel-vertex-ai
 
-Laravel bridge for [`kozmonos/vertex-ai`](https://github.com/kozmonos/vertex-ai): service provider, managers, Eloquent batch helpers, and S3 reference image loading.
+[![CI](https://github.com/Kozmonos/laravel-vertex-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Kozmonos/laravel-vertex-ai/actions/workflows/ci.yml)
+
+Laravel bridge for [`kozmonos/vertex-ai`](https://github.com/Kozmonos/vertex-ai): service provider, managers, Eloquent batch helpers, and S3 reference image loading.
 
 ## Install
 
