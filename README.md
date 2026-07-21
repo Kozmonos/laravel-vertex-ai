@@ -45,6 +45,43 @@ use Kozmonos\LaravelVertexAi\Batch\Concerns\HasVertexBatchJobRecord;
 app(PollSingleVertexBatchJobAction::class)->execute($job, lockPrefix: 'vertex-batch');
 ```
 
+## Usage recording
+
+Bind your app recorder to `Kozmonos\VertexAi\Contracts\UsageRecorder` **after** `LaravelVertexAiServiceProvider`. Extend `AbstractEloquentUsageRecorder` for Eloquent persistence with automatic cost calculation from `kozmonos/vertex-ai` pricing.
+
+```php
+// Before (callback wrapper)
+AiUsageContext::run($frame, fn () => $provider->generateText(...));
+
+// After (Laravel Context — no callback)
+use Kozmonos\LaravelVertexAi\Facades\AiUsage;
+
+AiUsage::for($youtubeItem, $project);
+$result = app(TextGenerationManager::class)->driver()->generateText(...);
+```
+
+Scope resolvers (organization/project) register via the `vertex-ai.usage_scope_resolvers` tag. Usage is **on by default**; disable with `VERTEX_AI_USAGE_ENABLED=false`.
+
+```php
+AiUsage::batch(); // mark subsequent calls as batch-priced
+AiUsage::fake();  // swap to NullUsageRecorder in tests
+AiUsage::flush(); // clear context between tests
+```
+
+Publish the migration stub:
+
+```bash
+php artisan vendor:publish --tag=vertex-ai-migrations
+```
+
+## Fluent `Ai` gateway (optional)
+
+```php
+use Kozmonos\LaravelVertexAi\Facades\Ai;
+
+Ai::for($item, $project)->text()->generate(...);
+```
+
 ## Custom usage recording
 
 Bind your app implementation to `Kozmonos\VertexAi\Contracts\UsageRecorder` in a service provider **after** `LaravelVertexAiServiceProvider`.

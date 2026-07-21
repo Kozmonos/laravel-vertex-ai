@@ -35,7 +35,11 @@ use Kozmonos\VertexAi\Support\AiModelRegistry;
 use Kozmonos\VertexAi\Support\ConfigValue;
 use Kozmonos\VertexAi\Support\ArrayTtsVoiceCatalog;
 use Kozmonos\VertexAi\Support\HttpReferenceImageLoader;
-use Kozmonos\VertexAi\Usage\NullUsageRecorder;
+use Kozmonos\LaravelVertexAi\Gateway\AiGateway;
+use Kozmonos\LaravelVertexAi\Usage\AiUsageManager;
+use Kozmonos\LaravelVertexAi\Usage\EloquentUsageRecorder;
+use Kozmonos\VertexAi\Pricing\AiCostCalculator;
+use Kozmonos\VertexAi\Pricing\AiPricingCatalog;
 use Kozmonos\VertexAi\Vertex\VertexBatchService;
 use Kozmonos\VertexAi\Vertex\VertexConfig;
 use Kozmonos\VertexAi\Vertex\VertexGeminiTtsProvider;
@@ -51,6 +55,24 @@ final class LaravelVertexAiServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/vertex-ai.php', 'vertex-ai');
+
+        $this->app->singleton(AiPricingCatalog::class, function (Application $app): AiPricingCatalog {
+            /** @var array<string, mixed> $pricing */
+            $pricing = $this->configRepository($app)->get('vertex-ai.pricing', []);
+
+            return new AiPricingCatalog(is_array($pricing) ? $pricing : []);
+        });
+
+        $this->app->singleton(AiCostCalculator::class);
+
+        $this->app->singleton(AiUsageManager::class, function (Application $app): AiUsageManager {
+            /** @var iterable<int, \Kozmonos\LaravelVertexAi\Contracts\UsageScopeResolver> $resolvers */
+            $resolvers = $app->tagged('vertex-ai.usage_scope_resolvers');
+
+            return new AiUsageManager($resolvers);
+        });
+
+        $this->app->singleton(AiGateway::class);
 
         $this->app->singleton(VertexConfig::class, function (Application $app): VertexConfig {
             /** @var array<string, mixed> $config */
@@ -95,7 +117,7 @@ final class LaravelVertexAiServiceProvider extends ServiceProvider
             fn (Application $app): BatchJobProvider => $app->make(VertexBatchService::class),
         );
 
-        $this->app->singleton(UsageRecorder::class, NullUsageRecorder::class);
+        $this->app->singleton(UsageRecorder::class, EloquentUsageRecorder::class);
 
         $this->app->singleton(ReferenceImageLoader::class, function (Application $app): ReferenceImageLoader {
             /** @var list<string> $allowedHosts */
@@ -185,6 +207,10 @@ final class LaravelVertexAiServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/vertex-ai.php' => config_path('vertex-ai.php'),
         ], 'vertex-ai-config');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/create_ai_usage_events_table.php.stub' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_ai_usage_events_table.php'),
+        ], 'vertex-ai-migrations');
     }
 
     private function configRepository(Application $app): Repository

@@ -45,4 +45,11 @@ return array_replace_recursive($defaults, [
             explode(',', (string) env('AI_OUTBOUND_ALLOWED_HOSTS', '')),
         ))),
     ],
+    'usage' => [
+        'enabled' => env('VERTEX_AI_USAGE_ENABLED', true),
+    ],
+    'pricing' => require dirname(
+        (new ReflectionClass(\Kozmonos\VertexAi\Pricing\AiPricingCatalog::class))->getFileName(),
+        3,
+    ).'/config/ai_pricing.php',
 ]);
