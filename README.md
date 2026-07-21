@@ -11,6 +11,8 @@ composer require kozmonos/laravel-vertex-ai
 php artisan vendor:publish --tag=vertex-ai-config
 ```
 
+Packages are published on [Packagist](https://packagist.org/packages/kozmonos/laravel-vertex-ai). For local development of both `vertex-ai` and this bridge, add path repositories in your app's `composer.json` (not required for normal installs).
+
 ## Environment
 
 | Variable | Purpose |

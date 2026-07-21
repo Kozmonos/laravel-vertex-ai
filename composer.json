@@ -71,14 +71,5 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "stable",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../vertex-ai",
-            "options": {
-                "symlink": true
-            }
-        }
-    ]
+    "minimum-stability": "stable"
 }
