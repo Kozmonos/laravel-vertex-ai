@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-$defaults = require dirname(__DIR__).'/../vertex-ai/config/vertex-ai.php';
+$defaults = require dirname(
+    (new ReflectionClass(\Kozmonos\VertexAi\Vertex\VertexConfig::class))->getFileName(),
+    3,
+).'/config/vertex-ai.php';
 
 return array_replace_recursive($defaults, [
     'text' => array_replace($defaults['text'], [
